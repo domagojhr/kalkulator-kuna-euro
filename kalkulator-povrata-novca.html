@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="utf-8">
+    <title>Konverzija iznosa</title>
+    <style>*, *:before, *:after {
+    box-sizing: border-box;
+}
+
+body {
+    padding: 1em;
+    font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    color: black;
+    font-weight: 700;
+    background-color: #e3e3e3;
+}
+
+h4 {
+    color: #f0a500;
+}
+
+input, input[type="radio"] + label, input[type="checkbox"] + label:before, select option, select {
+    width: 100%;
+    padding: 1em;
+    line-height: 1.4;
+    background-color: #f9f9f9;
+    border: 1px solid #e5e5e5;
+    color: black;
+    font-weight: 700;
+    border-radius: 3px;
+    -webkit-transition: 0.35s ease-in-out;
+    -moz-transition: 0.35s ease-in-out;
+    -o-transition: 0.35s ease-in-out;
+    transition: 0.35s ease-in-out;
+    transition: all 0.35s ease-in-out;
+}
+
+input:focus {
+    outline: 0;
+    border-color: #bd8200;
+}
+
+input:focus + .input-icon:after {
+    border-right-color: #f0a500;
+}
+
+.input-group {
+    margin-bottom: 1em;
+    zoom: 1; }
+
+.input-group:before, .input-group:after {
+    content: "";
+    display: table;
+}
+
+.input-group:after {
+    clear: both;
+}
+
+.input-group-icon {
+    position: relative;
+}
+
+.input-group-icon input {
+    padding-left: 4.4em;
+}
+
+.input-group-icon .input-icon {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 3.4em;
+    height: 3.4em;
+    line-height: 3.4em;
+    text-align: center;
+    pointer-events: none;
+}
+
+.input-group-icon .input-icon:after {
+    position: absolute;
+    top: 0.6em;
+    bottom: 0.6em;
+    left: 3.4em;
+    display: block;
+    border-right: 1px solid #e5e5e5;
+    content: "";
+    -webkit-transition: 0.35s ease-in-out;
+    -moz-transition: 0.35s ease-in-out;
+    -o-transition: 0.35s ease-in-out;
+    transition: 0.35s ease-in-out;
+    transition: all 0.35s ease-in-out;
+}
+
+hr {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.container {
+    max-width: 60em;
+    padding: 1em 3em 2em 3em;
+    margin: 0em auto;
+    background-color: #fff;
+    border-radius: 4.2px;
+    box-shadow: 0px 3px 10px -2px rgba(0, 0, 0, 0.2);
+}
+
+.row {
+    zoom: 1; }
+
+.row:before, .row:after {
+    content: "";
+    display: table;
+}
+
+.row:after {
+    clear: both;
+}
+
+.title {
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+input, .input-icon {
+    font-size: 13px;
+}
+
+input:placeholder-shown {
+    border: 1px solid red;
+}
+
+input:disabled {
+    border: 1px solid gray;
+}
+
+#additional_info {
+    font-weight: 400;
+    color: darkred;
+}
+
+#priblizan_trosak {
+    font-weight: 400;
+    color: gray;
+}</style>
+</head>
+
+<body>
+<div class="container">
+    <div class="row">
+        <h4>Konverzija iznosa</h4>
+        <!-- <div class="half-container half-right"><button onclick="calculate()">Osvježi</button></div> -->
+    </div>
+    <div class="row">
+        <div class="title">Iznos za naplatu:</div>
+        <div class="input-group input-group-icon">
+            <input required id="iznos_za_naplatu" type="number" onchange="add_info()" oninput="calculate()" onfocusout="updateZeros(this)" min="0" max="99999" step="0.01" placeholder="Iznos za naplatu"/>
+            <div class="input-icon">€</div>
+		<div id="priblizan_trosak"></div>
+        </div>
+        <div class="title">Primljeni iznos:</div>
+        <div class="input-group input-group-icon">
+            <input required id="iznos_primljeni_kune" type="number" oninput="calculate()" onfocusout="updateZeros(this)" min="0" max="99999" step="0.01" placeholder="Primljeni iznos"/>
+            <div class="input-icon">KN</i></div>
+        </div>
+        <hr/>
+        <div id="greske"></div>
+        <div class="title">Iznos za povrat:</div>
+        <div class="input-group input-group-icon">
+            <input disabled="disabled" id="izracun" type="text" min="0" max="99999" step="0.01" placeholder="Iznos za povrat"/>
+            <div class="input-icon">€</i></div>
+        </div>
+		<div id="additional_info" class="warning"></div>
+    </div>
+</div>
+<script>const tecaj = 7.53450
+
+function validate(input){
+	converted = Number(input)
+	return (/^[0-9][0-9]{0,}[\.]{0,1}[0-9]{0,2}$/.test(converted))
+}
+
+function round(numb) {
+	// Round to 2 decimal places:
+	return Math.round((numb + Number.EPSILON) * 100) / 100;
+}
+
+function updateZeros(obj) {
+  if(document.getElementById(obj.id) != null) {
+	if(document.getElementById(obj.id).value != ''){
+	  current = document.getElementById(obj.id).value;
+	  const dec = current.toString().split(',')[1];
+	  const len = dec && dec.length > 2 ? dec.length : 2;
+	  document.getElementById(obj.id).value = Number(current).toFixed(len);
+	  calculate();
+	}
+  }
+}
+
+function add_info(){
+	if(document.getElementById("iznos_za_naplatu") != null){
+	if(document.getElementById("iznos_za_naplatu").value != ''){
+		iznos_naplata = document.getElementById("iznos_za_naplatu").value
+		trosak = round(iznos_naplata*1*tecaj*1)
+		document.getElementById("priblizan_trosak").innerHTML = "Iznos u kunama: " + trosak.toString().replace('.', ',')
+		
+	}
+	else{
+		document.getElementById("priblizan_trosak").innerHTML = ''
+	}
+	}
+}
+
+function calculate(){
+	
+	if(document.getElementById("iznos_primljeni_kune").value == '' || document.getElementById("iznos_za_naplatu").value == ''){
+		document.getElementById("izracun").style.border = "1px solid red";
+		document.getElementById("izracun").placeholder = 'Unesite oba iznosa!';
+		document.getElementById("additional_info").innerHTML = '';
+		document.getElementById("izracun").value = '';
+		add_info();
+	}
+	else{
+		if(validate(document.getElementById("iznos_za_naplatu").value) && validate(document.getElementById("iznos_primljeni_kune").value)){
+			document.getElementById("izracun").style.border = "none";
+			
+			iznos_naplata = document.getElementById("iznos_za_naplatu").value
+			iznos_naplata = round((iznos_naplata*100)/100)
+			iznos_kune = document.getElementById("iznos_primljeni_kune").value
+			iznos_kune = round((iznos_kune*100)/100)
+			trosak = round(iznos_naplata*1*tecaj*1)
+			iznos_povrat_hrk = ((iznos_kune*100)-(trosak*100))/100
+			iznos_povrat_eur = round(iznos_povrat_hrk / tecaj)
+			add_info();
+			//edge case
+			if(iznos_povrat_eur == -0){
+				iznos_povrat_eur=Math.abs(iznos_povrat_eur);
+				document.getElementById("izracun").value = iznos_povrat_eur.toLocaleString("hr-HR");
+			}
+			else{
+				document.getElementById("izracun").value = iznos_povrat_eur.toLocaleString("hr-HR");
+			}
+			
+			if(iznos_povrat_eur < 0){
+				document.getElementById("additional_info").innerHTML = "Iznos u kunama nije dovoljan, </br>potrebno je još " + round(Math.abs(iznos_povrat_hrk)).toLocaleString("hr-HR") + " kn."
+				document.getElementById("izracun").value = iznos_povrat_eur.toLocaleString("hr-HR")
+			}
+			else{
+				document.getElementById("additional_info").innerHTML = ""
+			}
+		}
+		else{
+			document.getElementById("izracun").style.border = "1px solid red";
+			document.getElementById("izracun").placeholder = 'Unesite oba iznosa!'
+			document.getElementById("izracun").value = ''
+		}
+	}
+}</script>
+</body>
+
+</html>
