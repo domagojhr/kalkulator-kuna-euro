@@ -5,4 +5,6 @@
 
 - Ovaj kalkulator može se koristiti za izračun povrata iznosa u eurima nakon plaćanja u kunama.
 
+- Ne prikupljaju se nikakvi podaci i nije potreban pristup internetu.
+
 ## [Otvori kalkulator](https://domagojhr.github.io/kalkulator-kuna-euro/kalkulator-povrata-novca.html)
