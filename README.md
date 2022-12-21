@@ -6,5 +6,6 @@
 - Ovaj kalkulator može se koristiti za izračun povrata iznosa u eurima nakon plaćanja u kunama.
 
 - Ne prikupljaju se nikakvi podaci i nije potreban pristup internetu.
+- Aplikacija dostupna za Android u Trgovini Play: https://play.google.com/store/apps/details?id=com.domagojk.kalkulatorpovratanovca
 
 ## [Otvori kalkulator](https://domagojhr.github.io/kalkulator-kuna-euro/kalkulator-povrata-novca.html)
